@@ -14,7 +14,7 @@ class Estudante extends CI_Controller
 
     public function index()
     {
-        $this->load->view('estudante/main');
+        $this->load->view('commons/wrapper',['main_content'=>$this->load->view('estudante/main',[],true)]);
     }
 
 }
