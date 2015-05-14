@@ -1,5 +1,7 @@
 <?php
 $version = phpversion();
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 $module_name = 'php-5.6.0_sqlanywhere';
 if (strtoupper(substr(PHP_OS, 0, 3) == 'WIN')) {
     $module_ext = '.dll';
@@ -9,28 +11,42 @@ if (strtoupper(substr(PHP_OS, 0, 3) == 'WIN')) {
 /*
 extension_loaded('sqlanywhere');*/
 /*dl( $module_name.$module_ext );*/
-$conn = sasql_connect("HOST=192.168.0.4;DBN=iscte;UID=iscte;PWD=iscte123;ServerName=iscte");
+$sybase = sasql_connect("HOST=192.168.56.1:2638;DBN=main;UID=main;PWD=main123;ServerName=main");
 /* check connection */
 if (sasql_errorcode()) {
     printf("Connect failed: %s\n", sasql_error());
     exit();
 }
-echo "Connected successfully\n";
 
-$query = "SELECT * FROM Utilizador";
+$mysql = new PDO('mysql:host=localhost;dbname=sida;charset=utf8', 'sida', '123');
+$mysql->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-if ($result = sasql_query($conn, $query)) {
+syncDificulties($mysql,$sybase);
 
-    /* fetch associative array */
-    while ($row = sasql_fetch_assoc($result)) {
-        foreach($row as $key=>$value)
-            printf("%s (%s)", $key, $value);
-        echo "\n";
-    }
-
-    /* free result set */
-    sasql_free_result($result);
-}
-
+unset($mysql);
 /* close connection */
-sasql_close($conn);
+sasql_close($sybase);
+
+
+
+function syncDificulties(&$mysql,&$sybase){
+    $dificuldades = $mysql->prepare("INSERT INTO NivelDificuldade (idNivel,designacaoNivel,ultimaModificacao) VALUES(:id,:desig,now())");
+    $query = "SELECT * FROM read_tables('Nivel_Dificuldade')";
+
+    if ($result = sasql_query($sybase, $query)) {
+
+        /* fetch associative array */
+        while ($row = sasql_fetch_assoc($result)) {
+            try{
+                print_r($dificuldades->execute(array(
+                    ':id' => $row['idNivel'],
+                    ':desig' => $row['designacaoNivel'])));
+            }catch(Exception $e){
+
+            }
+        }
+
+        /* free result set */
+        sasql_free_result($result);
+    }
+}
