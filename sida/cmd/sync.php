@@ -21,28 +21,54 @@ if (sasql_errorcode()) {
 $mysql = new PDO('mysql:host=localhost;dbname=sida;charset=utf8', 'sida', '123');
 $mysql->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-syncDificulties($mysql,$sybase);
+//getAllDificulties($mysql,$sybase);
+syncPessoas($mysql,$sybase);
 
 unset($mysql);
 /* close connection */
 sasql_close($sybase);
 
 
+function syncPessoas(&$mysql,&$sybase){
+    $pessoa = $mysql->prepare("INSERT INTO Pessoa (isEstudante, nome, senha, emailPessoa, ultimaModificacao)
+                      VALUES(:isEstudante, :nome, :senha, :emailPessoa, :ultimaModificacao");
+    $estudante = $mysql->prepare("INSERT INTO Estudante (emailPessoa, id, curso)
+                      VALUES(:emailPessoa, :id, :curso");
+    $docente = $mysql->prepare("INSERT INTO Docente (emailPessoa, id)
+                      VALUES(:emailPessoa, :id");
+    if ($result = sasql_query($sybase, "SELECT * FROM read_log('Docente','1991/1/1',NOW())")) {
+        var_dump($result);
+        /* fetch associative array */
+        while ($row = sasql_fetch_assoc($result)) {
+            var_dump($row);
+            /*try{
+                $dificuldades->execute(array(
+                    ':id' => $row['idNivel'],
+                    ':desig' => $row['designacaoNivel']));
+            }catch(Exception $e){
+                var_dump($e);
+            }*/
+        }
 
-function syncDificulties(&$mysql,&$sybase){
+        /* free result set */
+        sasql_free_result($result);
+    }
+
+}
+
+function getAllDificulties(&$mysql,&$sybase){
     $dificuldades = $mysql->prepare("INSERT INTO NivelDificuldade (idNivel,designacaoNivel,ultimaModificacao) VALUES(:id,:desig,now())");
-    $query = "SELECT * FROM read_tables('Nivel_Dificuldade')";
 
-    if ($result = sasql_query($sybase, $query)) {
+    if ($result = sasql_query($sybase, "SELECT * FROM read_tables('Nivel_Dificuldade')")) {
 
         /* fetch associative array */
         while ($row = sasql_fetch_assoc($result)) {
             try{
-                print_r($dificuldades->execute(array(
+                $dificuldades->execute(array(
                     ':id' => $row['idNivel'],
-                    ':desig' => $row['designacaoNivel'])));
+                    ':desig' => $row['designacaoNivel']));
             }catch(Exception $e){
-
+                var_dump($e);
             }
         }
 
