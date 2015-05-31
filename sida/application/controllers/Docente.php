@@ -1,13 +1,13 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-class Estudante extends CI_Controller
+class Docente extends CI_Controller
 {
 
     public function __construct()
     {
         parent::__construct();
-        if (!isset($this->session->user->nome) || $this->session->user->isEstudante != "1") {
+        if (!isset($this->session->user->nome) || $this->session->user->isEstudante != "0") {
             redirect('/login');
         }
         $this->load->model('Modulo_model');
@@ -23,6 +23,13 @@ class Estudante extends CI_Controller
             $input['inicio'] = date('Y-m-d');
             $input['fim'] = date('Y-m-d');
         }
+        $so_as_minhas = 0;
+        if (!empty($input['minhas_respostas']) && $input['minhas_respostas'] == "yes") {
+            $so_as_minhas = true;
+        }else{
+            $input['minhas_respostas'] = "no";
+        }
+
         if (!empty($input['module']) && $input['module'] !== "0" && !empty($input['fetch']) && $input['fetch'] === "fetch-sub") {
             $subModules = $this->SubModulo_model->getByModulo($input['module']);
         } else {
@@ -33,14 +40,15 @@ class Estudante extends CI_Controller
             $input['module'] = $this->SubModulo_model->getByDesignacao($input['sub-model'])->designacaoModulo;
         }
 
-        $respostas = $this->Resposta_model->get($input,$this->session->user->emailPessoa,true);
+        $respostas = $this->Resposta_model->get($input, $this->session->user->emailPessoa, $so_as_minhas);
         $this->load->view('commons/wrapper', [
-            'main_content' => $this->load->view('estudante/main', [
+            'main_content' => $this->load->view('docente/main', [
                 'filters' => $this->load->view('commons/filters', [
                     'modules' => $this->Modulo_model->getAll(),
                     'sub_modules' => $subModules,
                     'difficulties' => $this->NivelDificuldade_model->getAll(),
-                    'input' => $input
+                    'input' => $input,
+                    'docente_mode' => true
                 ], true),
                 'table_content' => $respostas,
                 'chart_content' => $this->mkcChartStats($respostas),

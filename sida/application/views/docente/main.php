@@ -157,9 +157,11 @@
                             <th>Módulo</th>
                             <th>Sub-Modulo</th>
                             <th>Dificuldade</th>
+                            <th>Aluno</th>
                             <th>Resposta dada</th>
                             <th>Avaliação</th>
                             <th>Detalhes</th>
+                            <th>Média</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -170,6 +172,7 @@
                                     <td><?= $row->designacaoModulo ?></td>
                                     <td><?= $row->designacaoSubModulo ?></td>
                                     <td><?= $row->designacaoNivel ?></td>
+                                    <td><?= $row->nome ?></td>
                                     <td><?= $row->respostaEscolhida ?></td>
                                     <td><?php if ($row->resposta === $row->respostaEscolhida): ?>
                                             Certo
@@ -180,6 +183,12 @@
                                     <td>
                                         <button class="btn btn-primary" data-toggle="modal"
                                                 data-target="#modal_details_<?= $row->idQuestao ?>">Detalhes
+                                        </button>
+                                    </td>
+
+                                    <td>
+                                        <button class="btn btn-primary" data-toggle="modal"
+                                                data-target="#modal_media_<?= $row->idQuestao ?>">Média
                                         </button>
                                     </td>
                                 </tr>
@@ -214,6 +223,29 @@
                         <div>Outras opções de resposta: ???????????????????</div>
                         <div>Explicação:</div>
                         <div><?=$row->explicacao?></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <?php endforeach; ?>
+<?php endif; ?>
+<!-- END PAGE CONTENT WRAPPER -->
+<?php if (!empty($table_content)): ?>
+    <?php foreach ($table_content as $row): ?>
+        <div class="modal" id="modal_media_<?= $row->idQuestao ?>" tabindex="-1" role="dialog" aria-labelledby="defModalHead"
+             aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+                                class="sr-only">Close</span></button>
+                        <h4 class="modal-title" id="defModalHead">Média do aluno</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div>Média no modulo "<?=$row->designacaoModulo?>" é <?=$row->media?></div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
